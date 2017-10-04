@@ -1,0 +1,13 @@
+﻿{
+  "Repository": "Microsoft/vscode",
+  "Username": "",
+  "ApiKey": "",
+  "Since": "",
+  "IssueFolder": "Issues",
+  "CommentsFolder": "Comments",
+  "EventsFolder": "Events",
+  "DebugFolder": "DebugObject",
+  "IssueCsvFile": "Issues.csv",
+  "CommentsCsvFile": "Comments.csv",
+  "EventsCsvFile": "Events.csv"
+}
