@@ -23,13 +23,13 @@
             {
                 try
                 {
-                    this.Response.Headers.TryGetValues("X-Ratelimit-Remaining", out var values);
-                    var enumerable = values as IList<string> ?? values.ToList();
+                    this.Response.Headers.TryGetValues("X-Ratelimit-Remaining", out IEnumerable<string> values);
+                    IList<string> enumerable = values as IList<string> ?? values.ToList();
 
                     if (enumerable.Count == 1)
                     {
-                        var text = enumerable.First();
-                        if (int.TryParse(text, out var count))
+                        string text = enumerable.First();
+                        if (int.TryParse(text, out int count))
                         {
                             return count;
                         }
@@ -50,13 +50,13 @@
             {
                 try
                 {
-                    this.Response.Headers.TryGetValues("X-Ratelimit-Reset", out var values);
-                    var enumerable = values as IList<string> ?? values.ToList();
+                    this.Response.Headers.TryGetValues("X-Ratelimit-Reset", out IEnumerable<string> values);
+                    IList<string> enumerable = values as IList<string> ?? values.ToList();
 
                     if (enumerable.Count == 1)
                     {
-                        var text = enumerable.First();
-                        if (long.TryParse(text, out var count))
+                        string text = enumerable.First();
+                        if (long.TryParse(text, out long count))
                         {
                             return count;
                         }
