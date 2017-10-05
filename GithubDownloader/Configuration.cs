@@ -1,7 +1,6 @@
 ﻿namespace GithubDownloader
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using Newtonsoft.Json;
 
@@ -35,7 +34,7 @@
                 throw new ArgumentException($"The configuration couldn't be found at: {path}", nameof(path));
             }
 
-            var rawContent = File.ReadAllText(path);
+            string rawContent = File.ReadAllText(path);
             var result = JsonConvert.DeserializeObject<Configuration>(rawContent);
 
             result.ConfigurationFilename = path;
@@ -44,7 +43,7 @@
 
         public void Save()
         {
-            var rawContent = JsonConvert.SerializeObject(this);
+            string rawContent = JsonConvert.SerializeObject(this);
             File.WriteAllText(this.ConfigurationFilename, rawContent);
         }
     }

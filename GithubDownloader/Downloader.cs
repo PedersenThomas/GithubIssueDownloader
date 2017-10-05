@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GithubDownloader
+﻿namespace GithubDownloader
 {
+    using System;
     using System.IO;
     using System.Threading;
+    using System.Threading.Tasks;
     using Model;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -20,7 +16,7 @@ namespace GithubDownloader
         public string EventssFolder { get; set; }
         public string DebugFolder { get; set; }
 
-        private Client client;
+        private readonly Client client;
 
         public DateTime StartTime { get; set; }
 
@@ -48,18 +44,18 @@ namespace GithubDownloader
 
         private async Task DownloadIssues(string uri)
         {
-            var nextLink = uri;
+            string nextLink = uri;
 
-            while (!String.IsNullOrWhiteSpace(nextLink))
+            while (!string.IsNullOrWhiteSpace(nextLink))
             {
-                var response = await this.client.SendRequest(nextLink);
+                ClientResult response = await this.client.SendRequest(nextLink);
 
                 this.SleepIfNeeded(response);
 
                 if (response != null && response.Response?.IsSuccessStatusCode == true)
                 {
-                    var jArrayIssues = JArray.Parse(response.Content);
-                    foreach (var issueObject in jArrayIssues)
+                    JArray jArrayIssues = JArray.Parse(response.Content);
+                    foreach (JToken issueObject in jArrayIssues)
                     {
                         if (issueObject.Type == JTokenType.Object)
                         {
@@ -67,17 +63,18 @@ namespace GithubDownloader
 
 
                             var number = jObject["number"].Value<int>();
-                            File.WriteAllText(Path.Combine(this.DebugFolder, $"issue_{number}.json"), jObject.ToString(JsonFormatting));
-                            var issue = Issue.CreateFromGithub(jObject);
+                            File.WriteAllText(Path.Combine(this.DebugFolder, $"issue_{number}.json"),
+                                jObject.ToString(JsonFormatting));
+                            Issue issue = Issue.CreateFromGithub(jObject);
 
-                            var filename = Path.Combine(this.IssueFolder, $"{number}.json");
+                            string filename = Path.Combine(this.IssueFolder, $"{number}.json");
 
-                            if (jObject.TryGetValue("comments_url", out var commentsUri))
+                            if (jObject.TryGetValue("comments_url", out JToken commentsUri))
                             {
                                 await this.DownloadComments(commentsUri.Value<string>(), number);
                             }
 
-                            if (jObject.TryGetValue("events_url", out var eventsUri))
+                            if (jObject.TryGetValue("events_url", out JToken eventsUri))
                             {
                                 await this.DownloadEvents(eventsUri.Value<string>(), number);
                             }
@@ -86,7 +83,7 @@ namespace GithubDownloader
                             //assignee
                             //assignees
 
-                            var resultingJson = JsonConvert.SerializeObject(issue, JsonFormatting);
+                            string resultingJson = JsonConvert.SerializeObject(issue, JsonFormatting);
                             File.WriteAllText(filename, resultingJson);
                         }
                     }
@@ -135,29 +132,29 @@ namespace GithubDownloader
 
         private async Task DownloadComments(string uri, int issueNumber)
         {
+            string nextLink = uri;
 
-            var nextLink = uri;
-
-            while (!String.IsNullOrWhiteSpace(nextLink))
+            while (!string.IsNullOrWhiteSpace(nextLink))
             {
-                var response = await this.client.SendRequest(nextLink);
+                ClientResult response = await this.client.SendRequest(nextLink);
 
                 if (response != null && response.Response?.IsSuccessStatusCode == true)
                 {
-                    var jArrayIssues = JArray.Parse(response.Content);
-                    foreach (var issueObject in jArrayIssues)
+                    JArray jArrayIssues = JArray.Parse(response.Content);
+                    foreach (JToken issueObject in jArrayIssues)
                     {
                         if (issueObject.Type == JTokenType.Object)
                         {
-                            var jObject = (JObject)issueObject;
+                            var jObject = (JObject) issueObject;
 
                             var id = jObject["id"].Value<int>();
-                            File.WriteAllText(Path.Combine(this.DebugFolder, $"comment_{id}.json"), jObject.ToString(JsonFormatting));
+                            File.WriteAllText(Path.Combine(this.DebugFolder, $"comment_{id}.json"),
+                                jObject.ToString(JsonFormatting));
 
-                            var filename = Path.Combine(this.CommentsFolder, $"{id}.json");
+                            string filename = Path.Combine(this.CommentsFolder, $"{id}.json");
 
-                            var comment = Comment.CreateFromGithub(jObject, issueNumber);
-                            var resultingJson = JsonConvert.SerializeObject(comment, JsonFormatting);
+                            Comment comment = Comment.CreateFromGithub(jObject, issueNumber);
+                            string resultingJson = JsonConvert.SerializeObject(comment, JsonFormatting);
                             File.WriteAllText(filename, resultingJson);
                         }
                     }
@@ -178,28 +175,29 @@ namespace GithubDownloader
 
         private async Task DownloadEvents(string uri, int issueNumber)
         {
-            var nextLink = uri;
+            string nextLink = uri;
 
-            while (!String.IsNullOrWhiteSpace(nextLink))
+            while (!string.IsNullOrWhiteSpace(nextLink))
             {
-                var response = await this.client.SendRequest(nextLink);
+                ClientResult response = await this.client.SendRequest(nextLink);
 
                 if (response != null && response.Response?.IsSuccessStatusCode == true)
                 {
-                    var jArrayIssues = JArray.Parse(response.Content);
-                    foreach (var issueObject in jArrayIssues)
+                    JArray jArrayIssues = JArray.Parse(response.Content);
+                    foreach (JToken issueObject in jArrayIssues)
                     {
                         if (issueObject.Type == JTokenType.Object)
                         {
-                            var jObject = (JObject)issueObject;
+                            var jObject = (JObject) issueObject;
 
                             var id = jObject["id"].Value<int>();
-                            File.WriteAllText(Path.Combine(this.DebugFolder, $"event_{id}.json"), jObject.ToString(JsonFormatting));
+                            File.WriteAllText(Path.Combine(this.DebugFolder, $"event_{id}.json"),
+                                jObject.ToString(JsonFormatting));
 
-                            var filename = Path.Combine(this.EventssFolder, $"{id}.json");
+                            string filename = Path.Combine(this.EventssFolder, $"{id}.json");
 
-                            var eventObject = Event.CreateFromGithub(jObject, issueNumber);
-                            var resultingJson = JsonConvert.SerializeObject(eventObject, JsonFormatting);
+                            Event eventObject = Event.CreateFromGithub(jObject, issueNumber);
+                            string resultingJson = JsonConvert.SerializeObject(eventObject, JsonFormatting);
                             File.WriteAllText(filename, resultingJson);
                         }
                     }
@@ -224,10 +222,10 @@ namespace GithubDownloader
         {
             if (result.RatelimitRemaining < 5)
             {
-                var epochNow = Convert.ToInt64((DateTime.Now - epoch).TotalSeconds);
+                long epochNow = Convert.ToInt64((DateTime.Now - epoch).TotalSeconds);
                 var buffer = 10;
                 long sleeptime = result.RatelimitReset - epochNow + buffer;
-                Thread.Sleep((int)sleeptime * 1000);
+                Thread.Sleep((int) sleeptime * 1000);
             }
         }
     }

@@ -1,22 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GithubDownloader
+﻿namespace GithubDownloader
 {
     using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
     using CsvHelper;
     using Model;
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
 
-    class Program
+    internal class Program
     {
         public static void Main(string[] args)
         {
-            var configuration = Configuration.LoadFromPath("appsettings.json");
+            Configuration configuration = Configuration.LoadFromPath("appsettings.json");
             StartDownloading(configuration).GetAwaiter().GetResult();
             BundleToCsv(configuration);
         }
@@ -41,7 +37,7 @@ namespace GithubDownloader
 
         private static void BundleToCsv<T>(string folder, string outfile)
         {
-            var files = Directory.EnumerateFiles(folder)
+            IOrderedEnumerable<string> files = Directory.EnumerateFiles(folder)
                 .OrderBy(filename => int.Parse(Path.GetFileNameWithoutExtension(filename)));
 
             using (TextWriter writer = new StreamWriter(outfile))
@@ -51,7 +47,7 @@ namespace GithubDownloader
 
                 csv.WriteHeader<T>();
 
-                foreach (var file in files)
+                foreach (string file in files)
                 {
                     var issue = JsonConvert.DeserializeObject<T>(File.ReadAllText(file));
 

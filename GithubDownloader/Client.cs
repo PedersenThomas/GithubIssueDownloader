@@ -8,7 +8,6 @@
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
-    using Newtonsoft.Json.Linq;
 
     public class Client
     {
@@ -18,7 +17,7 @@
         public Client(string username, string apiKey, Logger logger)
         {
             this.Logger = logger;
-            if (!String.IsNullOrEmpty(username) && !String.IsNullOrEmpty(apiKey))
+            if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(apiKey))
             {
                 this.httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
                     Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{apiKey}")));
@@ -33,23 +32,23 @@
             HttpResponseMessage response = await this.httpClient.GetAsync(uri);
 
             var clientResult = new ClientResult(response);
-            Logger.Write($"Remaining: {clientResult.RatelimitRemaining} Send request to: {uri}");
+            this.Logger.Write($"Remaining: {clientResult.RatelimitRemaining} Send request to: {uri}");
 
             if (!response.IsSuccessStatusCode)
             {
                 return clientResult;
             }
 
-            var responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync();
 
             clientResult.Content = responseContent;
 
-            if (response.Headers.TryGetValues("Link", out var linkHeader) && linkHeader != null)
+            if (response.Headers.TryGetValues("Link", out IEnumerable<string> linkHeader) && linkHeader != null)
             {
-                var enumerable = linkHeader as IList<string> ?? linkHeader.ToList();
+                IList<string> enumerable = linkHeader as IList<string> ?? linkHeader.ToList();
                 if (enumerable.Count == 1)
                 {
-                    var links = ParseLinkHeader(enumerable.First());
+                    Dictionary<string, string> links = ParseLinkHeader(enumerable.First());
                     clientResult.Links = links;
                 }
             }
@@ -62,11 +61,11 @@
             //<https://api.github.com/repositories/41881900/issues?page=2>; rel="next", <https://api.github.com/repositories/41881900/issues?page=173>; rel="last"
             var dictionary = new Dictionary<string, string>();
 
-            var links = linkHeader.Split(',');
-            foreach (var linkEntry in links)
+            string[] links = linkHeader.Split(',');
+            foreach (string linkEntry in links)
             {
                 var searcher = new Regex("<(.*)>; rel=\"(.*)\"");
-                var match = searcher.Match(linkEntry);
+                Match match = searcher.Match(linkEntry);
                 if (match.Groups.Count == 3)
                 {
                     dictionary.Add(match.Groups[2].Value, match.Groups[1].Value);
