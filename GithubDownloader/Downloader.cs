@@ -29,6 +29,8 @@
 
         public async Task DownloadForRepo(string repo)
         {
+            this.CreateDirectories();
+
             this.StartTime = DateTime.UtcNow;
 
             var sinceText = string.IsNullOrEmpty(this.Configuration.Since) ? string.Empty : $"&since={this.Configuration.Since}";
@@ -38,6 +40,26 @@
 
             this.Configuration.Since = this.StartTime.ToString("o");
             this.Configuration.Save();
+        }
+
+        public void CreateDirectories()
+        {
+            EnsureDirectoryCreated(this.Configuration.IssueFolder);
+            EnsureDirectoryCreated(this.Configuration.CommentsFolder);
+            EnsureDirectoryCreated(this.Configuration.EventsFolder);
+            if (String.IsNullOrEmpty(this.Configuration.DebugFolder))
+            {
+                EnsureDirectoryCreated(this.Configuration.EventsFolder);
+            }
+        }
+
+        private static void EnsureDirectoryCreated(string folder)
+        {
+            if (!String.IsNullOrEmpty(folder) &&
+                !Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
         }
 
         private async Task DownloadIssues(string uri)
