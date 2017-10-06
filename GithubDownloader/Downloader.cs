@@ -61,10 +61,12 @@
                         {
                             var jObject = (JObject) issueObject;
 
-
                             var number = jObject["number"].Value<int>();
-                            File.WriteAllText(Path.Combine(this.DebugFolder, $"issue_{number}.json"),
-                                jObject.ToString(JsonFormatting));
+                            if (!String.IsNullOrEmpty(this.DebugFolder))
+                            {
+                                File.WriteAllText(Path.Combine(this.DebugFolder, $"issue_{number}.json"),
+                                    jObject.ToString(JsonFormatting));
+                            }
                             Issue issue = Issue.CreateFromGithub(jObject);
 
                             string filename = Path.Combine(this.IssueFolder, $"{number}.json");
@@ -100,36 +102,6 @@
             }
         }
 
-        //private JObject CleanObject(JObject obj)
-        //{
-        //    var propertyToRemove = new List<string>
-        //    {
-        //        "repository_url", "labels_url", "comments_url", "events_url", "html_url", "commit_url"
-        //    };
-        //    foreach (var nodeName in propertyToRemove)
-        //    {
-        //        if (obj.HasProperty(nodeName))
-        //        {
-        //            obj.Remove(nodeName);
-        //        }
-        //    }
-
-        //    //Rearrange the user info.
-        //    JToken userToken;
-        //    if (obj.TryGetValue("user", out userToken) || obj.TryGetValue("actor", out userToken))
-        //    {
-        //        var userObject = (JObject)userToken;
-        //        obj.Add("userName", userObject["login"]);
-        //        obj.Add("userId", userObject["id"]);
-        //        obj.Add("userType", userObject["type"]);
-        //        obj.Add("userSiteAdmin", userObject["site_admin"]);
-
-        //        obj.Remove("User");
-        //    }
-
-        //    return obj;
-        //}
-
         private async Task DownloadComments(string uri, int issueNumber)
         {
             string nextLink = uri;
@@ -148,8 +120,11 @@
                             var jObject = (JObject) issueObject;
 
                             var id = jObject["id"].Value<int>();
-                            File.WriteAllText(Path.Combine(this.DebugFolder, $"comment_{id}.json"),
-                                jObject.ToString(JsonFormatting));
+                            if (String.IsNullOrEmpty(this.DebugFolder))
+                            {
+                                File.WriteAllText(Path.Combine(this.DebugFolder, $"comment_{id}.json"),
+                                    jObject.ToString(JsonFormatting));
+                            }
 
                             string filename = Path.Combine(this.CommentsFolder, $"{id}.json");
 
@@ -191,8 +166,11 @@
                             var jObject = (JObject) issueObject;
 
                             var id = jObject["id"].Value<int>();
-                            File.WriteAllText(Path.Combine(this.DebugFolder, $"event_{id}.json"),
-                                jObject.ToString(JsonFormatting));
+                            if (String.IsNullOrEmpty(this.DebugFolder))
+                            {
+                                File.WriteAllText(Path.Combine(this.DebugFolder, $"event_{id}.json"),
+                                    jObject.ToString(JsonFormatting));
+                            }
 
                             string filename = Path.Combine(this.EventssFolder, $"{id}.json");
 
