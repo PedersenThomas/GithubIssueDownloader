@@ -19,6 +19,7 @@
         public long UserId { get; set; }
         public string UserType { get; set; }
         public bool UserIsSiteAdmin { get; set; }
+        public string Etag { get; set; }
 
         public static Issue CreateFromGithub(JObject jobject)
         {

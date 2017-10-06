@@ -11,10 +11,7 @@
     public class Downloader
     {
         public Logger Logger { get; }
-        public string IssueFolder { get; set; }
-        public string CommentsFolder { get; set; }
-        public string EventssFolder { get; set; }
-        public string DebugFolder { get; set; }
+        public Configuration Configuration { get; }
 
         private readonly Client client;
 
@@ -27,19 +24,20 @@
             this.Logger = logger;
             this.client = client;
 
-            this.IssueFolder = configuration.IssueFolder;
-            this.CommentsFolder = configuration.CommentsFolder;
-            this.EventssFolder = configuration.EventsFolder;
-            this.DebugFolder = configuration.DebugFolder;
+            this.Configuration = configuration;
         }
 
         public async Task DownloadForRepo(string repo)
         {
-            this.StartTime = DateTime.Now;
+            this.StartTime = DateTime.UtcNow;
 
-            string repoIssuesUrl = $"https://api.github.com/repos/{repo}/issues?state=all";
+            var sinceText = string.IsNullOrEmpty(this.Configuration.Since) ? string.Empty : $"&since={this.Configuration.Since}";
+            string repoIssuesUrl = $"https://api.github.com/repos/{repo}/issues?state=all{sinceText}";
 
             await this.DownloadIssues(repoIssuesUrl);
+
+            this.Configuration.Since = this.StartTime.ToString("o");
+            this.Configuration.Save();
         }
 
         private async Task DownloadIssues(string uri)
@@ -62,14 +60,14 @@
                             var jObject = (JObject) issueObject;
 
                             var number = jObject["number"].Value<int>();
-                            if (!String.IsNullOrEmpty(this.DebugFolder))
+                            if (!String.IsNullOrEmpty(this.Configuration.DebugFolder))
                             {
-                                File.WriteAllText(Path.Combine(this.DebugFolder, $"issue_{number}.json"),
+                                File.WriteAllText(Path.Combine(this.Configuration.DebugFolder, $"issue_{number}.json"),
                                     jObject.ToString(JsonFormatting));
                             }
                             Issue issue = Issue.CreateFromGithub(jObject);
 
-                            string filename = Path.Combine(this.IssueFolder, $"{number}.json");
+                            string filename = Path.Combine(this.Configuration.IssueFolder, $"{number}.json");
 
                             if (jObject.TryGetValue("comments_url", out JToken commentsUri))
                             {
@@ -120,15 +118,15 @@
                             var jObject = (JObject) issueObject;
 
                             var id = jObject["id"].Value<int>();
-                            if (String.IsNullOrEmpty(this.DebugFolder))
+                            if (String.IsNullOrEmpty(this.Configuration.DebugFolder))
                             {
-                                File.WriteAllText(Path.Combine(this.DebugFolder, $"comment_{id}.json"),
+                                File.WriteAllText(Path.Combine(this.Configuration.DebugFolder, $"comment_{id}.json"),
                                     jObject.ToString(JsonFormatting));
                             }
 
-                            string filename = Path.Combine(this.CommentsFolder, $"{id}.json");
+                            string filename = Path.Combine(this.Configuration.CommentsFolder, $"{id}.json");
 
-                            Comment comment = Comment.CreateFromGithub(jObject, issueNumber);
+                            Comment comment = Comment.CreateFromGithub(jObject, issueNumber, response.Response.Headers.ETag?.Tag);
                             string resultingJson = JsonConvert.SerializeObject(comment, JsonFormatting);
                             File.WriteAllText(filename, resultingJson);
                         }
@@ -166,15 +164,15 @@
                             var jObject = (JObject) issueObject;
 
                             var id = jObject["id"].Value<int>();
-                            if (String.IsNullOrEmpty(this.DebugFolder))
+                            if (String.IsNullOrEmpty(this.Configuration.DebugFolder))
                             {
-                                File.WriteAllText(Path.Combine(this.DebugFolder, $"event_{id}.json"),
+                                File.WriteAllText(Path.Combine(this.Configuration.DebugFolder, $"event_{id}.json"),
                                     jObject.ToString(JsonFormatting));
                             }
 
-                            string filename = Path.Combine(this.EventssFolder, $"{id}.json");
+                            string filename = Path.Combine(this.Configuration.EventsFolder, $"{id}.json");
 
-                            Event eventObject = Event.CreateFromGithub(jObject, issueNumber);
+                            Event eventObject = Event.CreateFromGithub(jObject, issueNumber, response.Response.Headers.ETag?.Tag);
                             string resultingJson = JsonConvert.SerializeObject(eventObject, JsonFormatting);
                             File.WriteAllText(filename, resultingJson);
                         }
@@ -194,13 +192,13 @@
             }
         }
 
-        private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         private void SleepIfNeeded(ClientResult result)
         {
             if (result.RatelimitRemaining < 5)
             {
-                long epochNow = Convert.ToInt64((DateTime.Now - epoch).TotalSeconds);
+                long epochNow = Convert.ToInt64((DateTime.Now - Epoch).TotalSeconds);
                 var buffer = 10;
                 long sleeptime = result.RatelimitReset - epochNow + buffer;
                 Thread.Sleep((int) sleeptime * 1000);

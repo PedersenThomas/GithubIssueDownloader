@@ -15,12 +15,14 @@
         public bool UserIsSiteAdmin { get; set; }
         public long IssueNumber { get; set; }
         public string AuthorAssociation { get; set; }
+        public string Etag { get; set; }
 
-        public static Comment CreateFromGithub(JObject jobject, long issueNumber)
+        public static Comment CreateFromGithub(JObject jobject, long issueNumber, string etag)
         {
             return new Comment
             {
                 IssueNumber = issueNumber,
+                Etag = etag,
                 Id = jobject["id"].Value<long>(),
                 CreatedAt = jobject["created_at"].Value<DateTime>(),
                 UpdatedAt = jobject["updated_at"].Value<DateTime?>(),

@@ -14,12 +14,14 @@
         public bool UserIsSiteAdmin { get; set; }
         public long IssueNumber { get; set; }
         public string CommitId { get; set; }
+        public string Etag { get; set; }
 
-        public static Event CreateFromGithub(JObject jObject, long issueNumber)
+        public static Event CreateFromGithub(JObject jObject, long issueNumber, string etag)
         {
             return new Event
             {
                 IssueNumber = issueNumber,
+                Etag = etag,
                 Id = jObject["id"].Value<long>(),
                 EventName = jObject["event"].Value<string>(),
                 CreatedAt = jObject["created_at"].Value<DateTime>(),
