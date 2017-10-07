@@ -1,6 +1,7 @@
 ﻿namespace GithubDownloader
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
@@ -146,7 +147,11 @@
                                     jObject.ToString(JsonFormatting));
                             }
 
-                            string filename = Path.Combine(this.Configuration.CommentsFolder, $"{id}.json");
+                            string folder = Path.Combine(this.Configuration.CommentsFolder,
+                                issueNumber.ToString(CultureInfo.InvariantCulture));
+                            EnsureDirectoryCreated(folder);
+
+                            string filename = Path.Combine(folder, $"{id}.json");
 
                             Comment comment = Comment.CreateFromGithub(jObject, issueNumber, response.Response.Headers.ETag?.Tag);
                             string resultingJson = JsonConvert.SerializeObject(comment, JsonFormatting);
@@ -192,7 +197,11 @@
                                     jObject.ToString(JsonFormatting));
                             }
 
-                            string filename = Path.Combine(this.Configuration.EventsFolder, $"{id}.json");
+                            string folder = Path.Combine(this.Configuration.EventsFolder,
+                                issueNumber.ToString(CultureInfo.InvariantCulture));
+                            EnsureDirectoryCreated(folder);
+
+                            string filename = Path.Combine(folder, $"{id}.json");
 
                             Event eventObject = Event.CreateFromGithub(jObject, issueNumber, response.Response.Headers.ETag?.Tag);
                             string resultingJson = JsonConvert.SerializeObject(eventObject, JsonFormatting);
