@@ -55,6 +55,7 @@
     <Compile Include="Downloader.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Model\Event.cs" />
+    <Compile Include="Model\EventStat.cs" />
     <Compile Include="Model\Issue.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

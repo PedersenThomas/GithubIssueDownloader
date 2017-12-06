@@ -17,9 +17,11 @@
         public string CommentsFolder { get; set; }
         public string EventsFolder { get; set; }
         public string DebugFolder { get; set; }
+        public string EventStatsFolder { get; set; }
         public string IssueCsvFile { get; set; }
         public string CommentsCsvFile { get; set; }
         public string EventsCsvFile { get; set; }
+        public string EventStatsCsvFile { get; set; }
 
 
         public static Configuration LoadFromPath(string path)
