@@ -17,6 +17,19 @@
         public string Content { get; set; }
         public Dictionary<string, string> Links { get; set; }
 
+        public string Etag
+        {
+            get
+            {
+                var tag = this.Response.Headers?.ETag?.Tag;
+                if(tag != null && tag.StartsWith("\"") && tag.EndsWith("\""))
+                {
+                    tag = tag.Substring(1, tag.Length - 2);
+                }
+                return tag;
+            }
+        }
+
         public int RatelimitRemaining
         {
             get

@@ -48,9 +48,9 @@
             EnsureDirectoryCreated(this.Configuration.IssueFolder);
             EnsureDirectoryCreated(this.Configuration.CommentsFolder);
             EnsureDirectoryCreated(this.Configuration.EventsFolder);
-            if (String.IsNullOrEmpty(this.Configuration.DebugFolder))
+            if (!String.IsNullOrEmpty(this.Configuration.DebugFolder))
             {
-                EnsureDirectoryCreated(this.Configuration.EventsFolder);
+                EnsureDirectoryCreated(this.Configuration.DebugFolder);
             }
         }
 
@@ -153,7 +153,7 @@
 
                             string filename = Path.Combine(folder, $"{id}.json");
 
-                            Comment comment = Comment.CreateFromGithub(jObject, issueNumber, response.Response.Headers.ETag?.Tag);
+                            Comment comment = Comment.CreateFromGithub(jObject, issueNumber, response.Etag);
                             string resultingJson = JsonConvert.SerializeObject(comment, JsonFormatting);
                             File.WriteAllText(filename, resultingJson);
                         }
@@ -203,7 +203,7 @@
 
                             string filename = Path.Combine(folder, $"{id}.json");
 
-                            Event eventObject = Event.CreateFromGithub(jObject, issueNumber, response.Response.Headers.ETag?.Tag);
+                            Event eventObject = Event.CreateFromGithub(jObject, issueNumber, response.Etag);
                             string resultingJson = JsonConvert.SerializeObject(eventObject, JsonFormatting);
                             File.WriteAllText(filename, resultingJson);
                         }

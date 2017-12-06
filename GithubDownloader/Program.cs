@@ -7,6 +7,8 @@
     using CsvHelper;
     using Model;
     using Newtonsoft.Json;
+    using CsvHelper.TypeConversion;
+    using System;
 
     internal class Program
     {
@@ -15,6 +17,8 @@
             Configuration configuration = Configuration.LoadFromPath("appsettings.json");
             StartDownloading(configuration).GetAwaiter().GetResult();
             BundleToCsv(configuration);
+
+            System.Console.WriteLine("Done!");
         }
 
         private static async Task StartDownloading(Configuration configuration)
@@ -30,6 +34,11 @@
 
         private static void BundleToCsv(Configuration configuration)
         {
+            var options = new TypeConverterOptions
+            {
+                Format = "o"
+            };
+            CsvHelper.TypeConversion.TypeConverterOptionsFactory.AddOptions<DateTime>(options);
             BundleToCsv<Issue>(configuration.IssueFolder, configuration.IssueCsvFile);
             BundleToCsv<Comment>(configuration.CommentsFolder, configuration.CommentsCsvFile);
             BundleToCsv<Event>(configuration.EventsFolder, configuration.EventsCsvFile);
@@ -37,7 +46,7 @@
 
         private static void BundleToCsv<T>(string folder, string outfile)
         {
-            IOrderedEnumerable<string> files = Directory.EnumerateFiles(folder)
+            IOrderedEnumerable<string> files = Directory.EnumerateFiles(folder, "*.json", SearchOption.AllDirectories)
                 .OrderBy(filename => int.Parse(Path.GetFileNameWithoutExtension(filename)));
 
             using (TextWriter writer = new StreamWriter(outfile))
