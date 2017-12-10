@@ -2,14 +2,12 @@
 {
     using System.IO;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
-    using CsvHelper;
     using Model;
     using Newtonsoft.Json;
-    using CsvHelper.TypeConversion;
     using System;
     using System.Collections.Generic;
+    using CsvBundlers;
     using Newtonsoft.Json.Linq;
 
     internal class Program
@@ -17,9 +15,9 @@
         public static void Main(string[] args)
         {
             Configuration configuration = Configuration.LoadFromPath("appsettings.json");
-            //StartDownloading(configuration).GetAwaiter().GetResult();
+            StartDownloading(configuration).GetAwaiter().GetResult();
 
-            PostDownloadAnalysis(configuration);
+            //PostDownloadAnalysis(configuration);
 
             BundleToCsv(configuration);
 
@@ -39,46 +37,27 @@
 
         private static void BundleToCsv(Configuration configuration)
         {
-            var options = new TypeConverterOptions
+            var bundlers = new List<ICsvBundler>
             {
-                Format = "o"
+                new IssueCsvBundler(configuration.IssueFolder, configuration.IssueCsvFile),
+                new CommentCsvBundler(configuration.CommentsFolder, configuration.CommentsCsvFile),
+                new EventCsvBundler(configuration.EventsFolder, configuration.EventsCsvFile)
             };
-            CsvHelper.TypeConversion.TypeConverterOptionsFactory.AddOptions<DateTime>(options);
-            BundleToCsv<Issue>(configuration.IssueFolder, configuration.IssueCsvFile);
-            BundleToCsv<Comment>(configuration.CommentsFolder, configuration.CommentsCsvFile);
-            BundleToCsv<Event>(configuration.EventsFolder, configuration.EventsCsvFile);
-            BundleToCsv<EventStat>(configuration.EventStatsFolder, configuration.EventStatsCsvFile);
-        }
 
-        private static void BundleToCsv<T>(string folder, string outfile)
-        {
-            IOrderedEnumerable<string> files = Directory.EnumerateFiles(folder, "*.json", SearchOption.AllDirectories)
-                .OrderBy(filename => int.Parse(Path.GetFileNameWithoutExtension(filename)));
-
-            using (TextWriter writer = new StreamWriter(outfile))
-            using (var csv = new CsvWriter(writer))
+            foreach (ICsvBundler csvBundler in bundlers)
             {
-                csv.Configuration.Encoding = Encoding.UTF8;
-
-                csv.WriteHeader<T>();
-
-                foreach (string file in files)
-                {
-                    var issue = JsonConvert.DeserializeObject<T>(File.ReadAllText(file));
-
-                    csv.WriteRecord(issue);
-                }
+                csvBundler.WriteFile();
             }
         }
 
         private static void PostDownloadAnalysis(Configuration configuration)
         {
             //This is a maga hack right now.
-            if(!Directory.Exists(configuration.DebugFolder))
-            {
-                Console.WriteLine("No Debug folder, no post analysis");
-                return;
-            }
+            //if(!Directory.Exists(configuration.DebugFolder))
+            //{
+            //    Console.WriteLine("No Debug folder, no post analysis");
+            //    return;
+            //}
 
             var IssueFolder = Directory.EnumerateDirectories(configuration.EventsFolder);
             foreach (var folder in IssueFolder)
@@ -119,7 +98,7 @@
             var labels = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var eventNumber in events)
             {
-                var filename = Path.Combine(configuration.DebugFolder, $"event_{eventNumber}");
+                var filename = ""; //Path.Combine(configuration.DebugFolder, $"event_{eventNumber}");
                 if(!File.Exists(filename))
                 {
                     continue;
@@ -165,7 +144,7 @@
         }
 
         private static IssueType ClassifyIssue(HashSet<string> labels)
-        {            
+        {
             if(ContainsLabels(labels, "Bug", "Accepted"))
             {
                 return IssueType.Bug;

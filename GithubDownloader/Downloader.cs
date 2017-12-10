@@ -48,10 +48,7 @@
             EnsureDirectoryCreated(this.Configuration.IssueFolder);
             EnsureDirectoryCreated(this.Configuration.CommentsFolder);
             EnsureDirectoryCreated(this.Configuration.EventsFolder);
-            if (!String.IsNullOrEmpty(this.Configuration.DebugFolder))
-            {
-                EnsureDirectoryCreated(this.Configuration.DebugFolder);
-            }
+            EnsureDirectoryCreated(this.Configuration.EventStatsFolder);
         }
 
         private static void EnsureDirectoryCreated(string folder)
@@ -81,16 +78,7 @@
                         if (issueObject.Type == JTokenType.Object)
                         {
                             var jObject = (JObject) issueObject;
-
                             var number = jObject["number"].Value<int>();
-                            if (!String.IsNullOrEmpty(this.Configuration.DebugFolder))
-                            {
-                                File.WriteAllText(Path.Combine(this.Configuration.DebugFolder, $"issue_{number}.json"),
-                                    jObject.ToString(JsonFormatting));
-                            }
-                            Issue issue = Issue.CreateFromGithub(jObject);
-
-                            string filename = Path.Combine(this.Configuration.IssueFolder, $"{number}.json");
 
                             if (jObject.TryGetValue("comments_url", out JToken commentsUri))
                             {
@@ -102,12 +90,8 @@
                                 await this.DownloadEvents(eventsUri.Value<string>(), number);
                             }
 
-                            //milestone 709
-                            //assignee
-                            //assignees
-
-                            string resultingJson = JsonConvert.SerializeObject(issue, JsonFormatting);
-                            File.WriteAllText(filename, resultingJson);
+                            string filename = Path.Combine(this.Configuration.IssueFolder, $"{number}.json");
+                            File.WriteAllText(filename, jObject.ToString());
                         }
                     }
 
@@ -139,23 +123,16 @@
                         if (issueObject.Type == JTokenType.Object)
                         {
                             var jObject = (JObject) issueObject;
+                            int id = jObject["id"].Value<int>();
 
-                            var id = jObject["id"].Value<int>();
-                            if (String.IsNullOrEmpty(this.Configuration.DebugFolder))
-                            {
-                                File.WriteAllText(Path.Combine(this.Configuration.DebugFolder, $"comment_{id}.json"),
-                                    jObject.ToString(JsonFormatting));
-                            }
-
-                            string folder = Path.Combine(this.Configuration.CommentsFolder,
-                                issueNumber.ToString(CultureInfo.InvariantCulture));
+                            string folder = Path.Combine(this.Configuration.CommentsFolder, issueNumber.ToString(CultureInfo.InvariantCulture));
                             EnsureDirectoryCreated(folder);
 
-                            string filename = Path.Combine(folder, $"{id}.json");
+                            jObject.Add("issueNumber", issueNumber);
+                            jObject.Add("etag", response.Etag);
 
-                            Comment comment = Comment.CreateFromGithub(jObject, issueNumber, response.Etag);
-                            string resultingJson = JsonConvert.SerializeObject(comment, JsonFormatting);
-                            File.WriteAllText(filename, resultingJson);
+                            string filename = Path.Combine(folder, $"{id}.json");
+                            File.WriteAllText(filename, jObject.ToString());
                         }
                     }
 
@@ -189,23 +166,16 @@
                         if (issueObject.Type == JTokenType.Object)
                         {
                             var jObject = (JObject) issueObject;
-
                             var id = jObject["id"].Value<int>();
-                            if (String.IsNullOrEmpty(this.Configuration.DebugFolder))
-                            {
-                                File.WriteAllText(Path.Combine(this.Configuration.DebugFolder, $"event_{id}.json"),
-                                    jObject.ToString(JsonFormatting));
-                            }
 
-                            string folder = Path.Combine(this.Configuration.EventsFolder,
-                                issueNumber.ToString(CultureInfo.InvariantCulture));
+                            string folder = Path.Combine(this.Configuration.EventsFolder, issueNumber.ToString(CultureInfo.InvariantCulture));
                             EnsureDirectoryCreated(folder);
 
-                            string filename = Path.Combine(folder, $"{id}.json");
+                            jObject.Add("issueNumber", issueNumber);
+                            jObject.Add("etag", response.Etag);
 
-                            Event eventObject = Event.CreateFromGithub(jObject, issueNumber, response.Etag);
-                            string resultingJson = JsonConvert.SerializeObject(eventObject, JsonFormatting);
-                            File.WriteAllText(filename, resultingJson);
+                            string filename = Path.Combine(folder, $"{id}.json");
+                            File.WriteAllText(filename, jObject.ToString());
                         }
                     }
 

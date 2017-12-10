@@ -1,6 +1,5 @@
 ﻿namespace GithubDownloader.Model
 {
-    using System;
     using Newtonsoft.Json.Linq;
 
     internal class Issue
@@ -10,9 +9,9 @@
         public string Title { get; set; }
         public string State { get; set; }
         public bool Locked { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public DateTime? ClosedAt { get; set; }
+        public string CreatedAt { get; set; }
+        public string UpdatedAt { get; set; }
+        public string ClosedAt { get; set; }
         public string AuthorAssociation { get; set; }
         public string Body { get; set; }
         public string UserName { get; set; }
@@ -21,7 +20,7 @@
         public bool UserIsSiteAdmin { get; set; }
         public string Etag { get; set; }
 
-        public static Issue CreateFromGithub(JObject jobject)
+        public static Issue CreateFromJObject(JObject jobject)
         {
             return new Issue
             {
@@ -34,11 +33,11 @@
                 UserIsSiteAdmin = jobject["user"]["site_admin"].Value<bool>(),
                 State = jobject["state"].Value<string>(),
                 Locked = jobject["locked"].Value<bool>(),
-                CreatedAt = jobject["created_at"].Value<DateTime>(),
-                UpdatedAt = jobject["updated_at"].Value<DateTime?>(),
-                ClosedAt = jobject["closed_at"].Value<DateTime?>(),
+                CreatedAt = jobject["created_at"].Value<string>(),
+                UpdatedAt = jobject["updated_at"].Value<string>(),
+                ClosedAt = jobject["closed_at"].Value<string>(),
                 AuthorAssociation = jobject["author_association"].Value<string>(),
-                Body = jobject["body"].Value<string>(),
+                Body = jobject["body"].Value<string>()
             };
         }
     }

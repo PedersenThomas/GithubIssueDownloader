@@ -16,12 +16,12 @@
         public string CommitId { get; set; }
         public string Etag { get; set; }
 
-        public static Event CreateFromGithub(JObject jObject, long issueNumber, string etag)
+        public static Event CreateFromJObject(JObject jObject)
         {
             return new Event
             {
-                IssueNumber = issueNumber,
-                Etag = etag,
+                IssueNumber = jObject["issueNumber"].Value<int>(),
+                Etag = jObject["etag"].Value<string>(),
                 Id = jObject["id"].Value<long>(),
                 EventName = jObject["event"].Value<string>(),
                 CreatedAt = jObject["created_at"].Value<DateTime>(),

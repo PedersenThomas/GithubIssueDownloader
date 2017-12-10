@@ -50,6 +50,11 @@
   <ItemGroup>
     <Compile Include="Client.cs" />
     <Compile Include="ClientResult.cs" />
+    <Compile Include="CsvBundlers\CommentCsvBundler.cs" />
+    <Compile Include="CsvBundlers\EventCsvBundler.cs" />
+    <Compile Include="CsvBundlers\CsvBundler.cs" />
+    <Compile Include="CsvBundlers\ICsvBundler.cs" />
+    <Compile Include="CsvBundlers\IssueCsvBundler.cs" />
     <Compile Include="Model\Comment.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Downloader.cs" />
