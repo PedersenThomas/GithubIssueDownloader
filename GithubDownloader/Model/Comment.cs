@@ -1,13 +1,14 @@
 ﻿namespace GithubDownloader
 {
+    using System;
     using Newtonsoft.Json.Linq;
 
     public class Comment
     {
         public long Id { get; set; }
         public string Body { get; set; }
-        public string CreatedAt { get; set; }
-        public string UpdatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public string UserName { get; set; }
         public long UserId { get; set; }
         public string UserType { get; set; }
@@ -23,8 +24,8 @@
                 IssueNumber = jObject["issueNumber"].Value<int>(),
                 Etag = jObject["etag"].Value<string>(),
                 Id = jObject["id"].Value<long>(),
-                CreatedAt = jObject["created_at"].Value<string>(),
-                UpdatedAt = jObject["updated_at"].Value<string>(),
+                CreatedAt = jObject["created_at"].Value<DateTime>(),
+                UpdatedAt = jObject["updated_at"].Value<DateTime?>(),
                 AuthorAssociation = jObject["author_association"].Value<string>(),
                 Body = jObject["body"].Value<string>(),
                 UserName = jObject["user"]["login"].Value<string>(),

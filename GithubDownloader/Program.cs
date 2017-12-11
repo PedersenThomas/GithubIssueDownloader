@@ -7,7 +7,9 @@
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
+    using Analysis;
     using CsvBundlers;
+    using CsvHelper.TypeConversion;
     using Newtonsoft.Json.Linq;
 
     internal class Program
@@ -17,7 +19,7 @@
             Configuration configuration = Configuration.LoadFromPath("appsettings.json");
             StartDownloading(configuration).GetAwaiter().GetResult();
 
-            //PostDownloadAnalysis(configuration);
+            PostDownloadAnalysis(configuration);
 
             BundleToCsv(configuration);
 
@@ -37,6 +39,13 @@
 
         private static void BundleToCsv(Configuration configuration)
         {
+            var options = new TypeConverterOptions
+            {
+                Format = "o"
+            };
+            CsvHelper.TypeConversion.TypeConverterOptionsFactory.AddOptions<DateTime>(options);
+            CsvHelper.TypeConversion.TypeConverterOptionsFactory.AddOptions<DateTime?>(options);
+
             var bundlers = new List<ICsvBundler>
             {
                 new IssueCsvBundler(configuration.IssueFolder, configuration.IssueCsvFile),
@@ -52,18 +61,14 @@
 
         private static void PostDownloadAnalysis(Configuration configuration)
         {
-            //This is a maga hack right now.
-            //if(!Directory.Exists(configuration.DebugFolder))
-            //{
-            //    Console.WriteLine("No Debug folder, no post analysis");
-            //    return;
-            //}
+            var extracter = new LabelsExtrater(configuration.EventsFolder, configuration.LabelsCsvFile);
+            extracter.GenerateFiles();
 
-            var IssueFolder = Directory.EnumerateDirectories(configuration.EventsFolder);
-            foreach (var folder in IssueFolder)
-            {
-                AnalysisIssueEvents(configuration, folder);
-            }
+            //var IssueFolder = Directory.EnumerateDirectories(configuration.EventsFolder);
+            //foreach (var folder in IssueFolder)
+            //{
+            //    AnalysisIssueEvents(configuration, folder);
+            //}
         }
 
         private static void AnalysisIssueEvents(Configuration configuration, string absoluteEventsFolder)

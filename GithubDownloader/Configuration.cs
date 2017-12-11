@@ -21,6 +21,7 @@
         public string CommentsCsvFile { get; set; }
         public string EventsCsvFile { get; set; }
         public string EventStatsCsvFile { get; set; }
+        public string LabelsCsvFile { get; set; }
 
 
         public static Configuration LoadFromPath(string path)

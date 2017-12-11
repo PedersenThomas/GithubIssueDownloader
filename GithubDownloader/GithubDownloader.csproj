@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analysis\LabelsExtrater.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="ClientResult.cs" />
     <Compile Include="CsvBundlers\CommentCsvBundler.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="Model\Event.cs" />
     <Compile Include="Model\EventStat.cs" />
     <Compile Include="Model\Issue.cs" />
+    <Compile Include="Model\IssueLabeling.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

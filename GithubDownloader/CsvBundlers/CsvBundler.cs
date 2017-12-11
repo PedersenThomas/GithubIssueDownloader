@@ -5,6 +5,7 @@
     using System.IO;
     using System.Text;
     using CsvHelper;
+    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
     internal class CsvBundler<T> : ICsvBundler
@@ -36,10 +37,7 @@
                     var obj = JObject.Parse(File.ReadAllText(file));
 
                     var model = this.Creator(obj);
-                    csv.WriteField(model);
-
-                    //Flush the record
-                    csv.NextRecord();
+                    csv.WriteRecord(model);
                 }
             }
         }
