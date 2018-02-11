@@ -11,11 +11,15 @@
     using CsvBundlers;
     using CsvHelper.TypeConversion;
     using Newtonsoft.Json.Linq;
+    using System.Diagnostics;
 
     internal class Program
     {
         public static void Main(string[] args)
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             Configuration configuration = Configuration.LoadFromPath("appsettings.json");
             StartDownloading(configuration).GetAwaiter().GetResult();
 
@@ -23,6 +27,8 @@
 
             BundleToCsv(configuration);
 
+            stopwatch.Stop();
+            Console.WriteLine($"Time elapsed: {stopwatch.Elapsed}.");
             Console.WriteLine("Done!");
         }
 
